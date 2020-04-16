@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
             , 1920
             , 1080
             , "/media/sf_Downloads/foo/foo.aac"
-            , 48000
+            , 16000
             , "/media/sf_Downloads/foo/foo.mp4");
     return ret;
 }
@@ -158,14 +158,14 @@ static inline int _muxer_mp4(const char* h264, int width, int height, const char
         //--------------------------------------------------------------------
         audio_tick_now = video_tick_now = _get_tick_count();
 
-        MP4TrackId m_videoId = -1;
+        MP4TrackId m_videoId = MP4_INVALID_TRACK_ID;
         int sps_wt = 0;
         int pps_wt = 0;
         while (1) {
             last_update = _get_tick_count();
 
             if (last_update - audio_tick_now > audio_tick_gap - tick_exp) {
-                // printf("now:%lld last_update:%lld audio_tick:%lld tick_exp:%lld\n", audio_tick_now, last_update, audio_tick, tick_exp);
+                //printf("now:%lld last_update:%lld audio_tick:%lld tick_exp:%lld\n", audio_tick_now, last_update, audio_tick, tick_exp);
                 audio_tick += audio_tick_gap;
                 int audio_len = _read_aac(m_fp_AAC, audioBuf, 1024);
                 if (audio_len == -2) {
@@ -173,8 +173,8 @@ static inline int _muxer_mp4(const char* h264, int width, int height, const char
                 } else if (audio_len <= 0) {
                     break;
                 }
-
-                MP4WriteSample(m_hMp4File, m_audioId, audioBuf, audio_len, MP4_INVALID_DURATION, 0, 1);
+                if (m_videoId != MP4_INVALID_TRACK_ID && video_tick > 333)
+                    MP4WriteSample(m_hMp4File, m_audioId, audioBuf, audio_len, MP4_INVALID_DURATION, 0, 1);
                 audio_tick_now = _get_tick_count();
             }
 h264:
@@ -329,10 +329,10 @@ static inline int _write_h264(MP4TrackId* m_videoId, int* sps_wt, int* pps_wt, M
             MP4SetVideoProfileLevel(hMp4File, 1); //  Simple Profile @ Level 3
             MP4AddH264SequenceParameterSet(hMp4File, *m_videoId, nalu.data, nalu.size);
             *sps_wt = 1;
-        } else if (nalu.type == 0x08 && *pps_wt == 0) { // pps
+        } else if (nalu.type == 0x08 && *pps_wt == 0 && *m_videoId != MP4_INVALID_TRACK_ID) { // pps
             MP4AddH264PictureParameterSet(hMp4File, *m_videoId, nalu.data, nalu.size);
             *pps_wt = 1;
-        } else if (nalu.type == 0x01 || nalu.type == 0x05) {
+        } else if (*m_videoId != MP4_INVALID_TRACK_ID && (nalu.type == 0x01 || nalu.type == 0x05)) {
             int datalen = nalu.size + 4;
             unsigned char* data = malloc(datalen);
             data[0] = nalu.size >> 24;
