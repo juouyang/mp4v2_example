@@ -38,7 +38,7 @@
       </toolsSet>
       <compileType>
         <linkerTool>
-          <commandLine>-lmp4v2</commandLine>
+          <commandLine>-lmp4v2 -lpthread</commandLine>
         </linkerTool>
       </compileType>
       <item path="main.c" ex="false" tool="0" flavor2="0">

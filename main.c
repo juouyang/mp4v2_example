@@ -13,8 +13,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 #include <arpa/inet.h>
 #include <mp4v2/mp4v2.h>
 
@@ -28,22 +30,96 @@ typedef struct _MP4ENC_NaluUnit {
     unsigned char *data;
 } MP4ENC_NaluUnit;
 
+static inline int _muxer_mp4(const char* h264, int width, int height, const char* aac, int sr, const char* mp4);
+
+static inline unsigned long GetTickCount();
+static inline int _read_aac(FILE* m_fp_AAC, unsigned char* buf, int buf_size);
+static inline int _read_h264(FILE* m_fp_h264, unsigned char* buf, int buf_size);
+static inline int _read_one_nalu_from_buf(const unsigned char* buffer, unsigned int nBufferSize, unsigned int offSet, MP4ENC_NaluUnit* nalu);
+static inline int _write_h264(int* m_videoId, int* sps_wt, int* pps_wt, MP4FileHandle hMp4File, int w, int h, const unsigned char* pData, int size);
+
+static int running = 3;
+
+static void* thread_libfbm_video_0(void* arg) {
+    printf("thread_libfbm_video_0\n");
+    do {
+        int ret = _muxer_mp4("/media/sf_Downloads/foo/foo.h264"
+                , 1920
+                , 1080
+                , "/media/sf_Downloads/foo/foo.aac"
+                , 48000
+                , "/media/sf_Downloads/foo/foo.mp4");
+        printf("ret = %d\n", ret);
+    } while (0);
+    running--;
+    pthread_exit(NULL);
+}
+
+static void* thread_libfbm_video_1(void* arg) {
+    printf("thread_libfbm_video_1\n");
+    do {
+        int ret = _muxer_mp4("/media/sf_Downloads/foo/foo-1.h264"
+                , 1920
+                , 1080
+                , "/media/sf_Downloads/foo/foo-1.aac"
+                , 48000
+                , "/media/sf_Downloads/foo/foo-1.mp4");
+        printf("ret = %d\n", ret);
+    } while (0);
+    running--;
+    pthread_exit(NULL);
+}
+
+static void* thread_libfbm_video_2(void* arg) {
+    printf("thread_libfbm_video_2\n");
+    do {
+        int ret = _muxer_mp4("/media/sf_Downloads/foo/foo-2.h264"
+                , 1920
+                , 1080
+                , "/media/sf_Downloads/foo/foo-2.aac"
+                , 48000
+                , "/media/sf_Downloads/foo/foo-2.mp4");
+        printf("ret = %d\n", ret);
+    } while (0);
+    running--;
+    pthread_exit(NULL);
+}
+
+int main(int argc, char** argv) {
+    pthread_t ThreadVideoFrameData_ID_1, ThreadVideoFrameData_ID_2, ThreadVideoFrameData_ID_3;
+    int ret = 0;
+    if ((ret = pthread_create(&ThreadVideoFrameData_ID_1, NULL, &thread_libfbm_video_0, (void *) NULL))) {
+        printf("Failed to create libfbm video thread 0, ret=[%d]", ret);
+        return -1;
+    }
+    pthread_detach(ThreadVideoFrameData_ID_1);
+
+    if ((ret = pthread_create(&ThreadVideoFrameData_ID_2, NULL, &thread_libfbm_video_1, (void *) NULL))) {
+        printf("Failed to create libfbm video thread 1, ret=[%d]", ret);
+        return -1;
+    }
+    pthread_detach(ThreadVideoFrameData_ID_2);
+
+    if ((ret = pthread_create(&ThreadVideoFrameData_ID_3, NULL, &thread_libfbm_video_2, (void *) NULL))) {
+        printf("Failed to create libfbm video thread 2, ret=[%d]", ret);
+        return -1;
+    }
+    pthread_detach(ThreadVideoFrameData_ID_3);
+
+    while (running > 0) {
+        sleep(1);
+    }
+
+    return 0;
+}
+
 static inline unsigned long GetTickCount() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return ((double) ts.tv_sec * 1000.0 + ts.tv_nsec / 1000000.0);
 }
 
-int _read_h264(FILE* m_fp_h264, unsigned char* buf, int buf_size) {
-    int true_size = fread(buf, 1, buf_size, m_fp_h264);
-    if (true_size > 0) {
-        return true_size;
-    } else {
-        return 0;
-    }
-}
-
-int _read_aac(FILE* m_fp_AAC, unsigned char* buf, int buf_size) {
+static inline int _read_aac(FILE* m_fp_AAC, unsigned char* buf, int buf_size) {
     unsigned char aac_header[7];
     int true_size = 0;
 
@@ -64,11 +140,16 @@ int _read_aac(FILE* m_fp_AAC, unsigned char* buf, int buf_size) {
     }
 }
 
-static inline int _ReadOneNaluFromBuf(
-        const unsigned char* buffer,
-        unsigned int nBufferSize,
-        unsigned int offSet,
-        MP4ENC_NaluUnit* nalu) {
+static inline int _read_h264(FILE* m_fp_h264, unsigned char* buf, int buf_size) {
+    int true_size = fread(buf, 1, buf_size, m_fp_h264);
+    if (true_size > 0) {
+        return true_size;
+    } else {
+        return 0;
+    }
+}
+
+static inline int _read_one_nalu_from_buf(const unsigned char* buffer, unsigned int nBufferSize, unsigned int offSet, MP4ENC_NaluUnit* nalu) {
     int i = offSet;
     while (i < nBufferSize) {
         if (buffer[i++] == 0x00 &&
@@ -100,14 +181,7 @@ static inline int _ReadOneNaluFromBuf(
     return 0;
 }
 
-static MP4TrackId m_videoId = 0;
-
-int _WriteH264Data(
-        MP4FileHandle hMp4File,
-        int w,
-        int h,
-        const unsigned char* pData,
-        int size) {
+static inline int _write_h264(int* m_videoId, int* sps_wt, int* pps_wt, MP4FileHandle hMp4File, int w, int h, const unsigned char* pData, int size) {
     if (hMp4File == NULL) {
         return -1;
     }
@@ -119,13 +193,10 @@ int _WriteH264Data(
     int pos = 0;
     int len = 0;
     int wt_frame = 0;
-//    int sps_wt = 0;
-//    int pps_wt = 0;
 
-    while (len = _ReadOneNaluFromBuf(pData, size, pos, &nalu)) {
-        if (nalu.type == 0x07/* && sps_wt == 0*/) { // sps
-            printf("sps\t");
-            m_videoId = MP4AddH264VideoTrack
+    while (len = _read_one_nalu_from_buf(pData, size, pos, &nalu)) {
+        if (nalu.type == 0x07 && *sps_wt == 0) { // sps
+            *m_videoId = MP4AddH264VideoTrack
                     (hMp4File,
                     TIME_SCALE,
                     (double) TIME_SCALE / FRAME_FRATE,
@@ -135,21 +206,17 @@ int _WriteH264Data(
                     nalu.data[2], // sps[2] profile_compat
                     nalu.data[3], // sps[3] AVCLevelIndication
                     3); // 4 bytes length before each NAL unit
-            if (m_videoId == MP4_INVALID_TRACK_ID) {
+            if (*m_videoId == MP4_INVALID_TRACK_ID) {
                 printf("add video track failed.\n");
                 return 0;
             }
             MP4SetVideoProfileLevel(hMp4File, 1); //  Simple Profile @ Level 3
-            printf("nalu.size=%d\n", nalu.size);
-            MP4AddH264SequenceParameterSet(hMp4File, m_videoId, nalu.data, nalu.size);
-//            sps_wt = 1;
-        } else if (nalu.type == 0x08 /*&& pps_wt == 0*/) { // pps
-            printf("pps\t");
-            printf("nalu.size=%d\n", nalu.size);
-            MP4AddH264PictureParameterSet(hMp4File, m_videoId, nalu.data, nalu.size);
-//            pps_wt = 1;
+            MP4AddH264SequenceParameterSet(hMp4File, *m_videoId, nalu.data, nalu.size);
+            *sps_wt = 1;
+        } else if (nalu.type == 0x08 && *pps_wt == 0) { // pps
+            MP4AddH264PictureParameterSet(hMp4File, *m_videoId, nalu.data, nalu.size);
+            *pps_wt = 1;
         } else if (nalu.type == 0x01 || nalu.type == 0x05) {
-            printf("p\t");
             int datalen = nalu.size + 4;
             unsigned char* data = malloc(datalen);
             data[0] = nalu.size >> 24;
@@ -162,9 +229,7 @@ int _WriteH264Data(
             if (nalu.type == 0x05) {
                 syn = 1;
             }
-
-            printf("datalen=%d\n", datalen);
-            if (!MP4WriteSample(hMp4File, m_videoId, data, datalen, MP4_INVALID_DURATION, 0, syn)) {
+            if (!MP4WriteSample(hMp4File, *m_videoId, data, datalen, MP4_INVALID_DURATION, 0, syn)) {
                 return 0;
             }
             if (data) {
@@ -182,9 +247,7 @@ int _WriteH264Data(
     return pos;
 }
 
-static inline int _muxer_mp4(const char* h264, int width, int height,
-        const char* aac, int sr,
-        const char* mp4) {
+static inline int _muxer_mp4(const char* h264, int width, int height, const char* aac, int sr, const char* mp4) {
 
     int ret = 0;
     FILE* m_fp_h264 = NULL;
@@ -285,18 +348,20 @@ static inline int _muxer_mp4(const char* h264, int width, int height,
         int pos = 0;
         int readlen = 0;
         int writelen = 0;
-
         //--------------------------------------------------------------------
         unsigned long long audio_tick_now = 0;
         unsigned long long video_tick_now = 0;
         unsigned long long last_update = 0;
         unsigned long long audio_tick = 0;
         unsigned long long video_tick = 0;
-
         unsigned long long tick_exp_new = 0;
         unsigned long long tick_exp = 0;
         //--------------------------------------------------------------------
         audio_tick_now = video_tick_now = GetTickCount();
+
+        MP4TrackId m_videoId = -1;
+        int sps_wt = 0;
+        int pps_wt = 0;
         while (1) {
             last_update = GetTickCount();
 
@@ -333,7 +398,7 @@ h264:
                         break;
                     }
                 }
-                writelen = _WriteH264Data(m_hMp4File, width, height, buffer, writelen);
+                writelen = _write_h264(&m_videoId, &sps_wt, &pps_wt, m_hMp4File, width, height, buffer, writelen);
                 if (writelen <= 0) {
                     break;
                 }
@@ -342,7 +407,6 @@ h264:
                 if (pos == 0) {
                     break;
                 }
-                printf("pos=%d\n", pos);
                 video_tick_now = GetTickCount();
             }
 
@@ -367,15 +431,3 @@ h264:
 
     return ret;
 }
-
-int main(int argc, char** argv) {
-    int ret = _muxer_mp4("/media/sf_Downloads/foo/foo.h264"
-            , 1920
-            , 1080
-            , "/media/sf_Downloads/foo/foo.aac"
-            , 48000
-            , "/media/sf_Downloads/foo/foo.mp4");
-    printf("ret = %d\n", ret);
-    return 0;
-}
-
