@@ -55,7 +55,7 @@ static inline int _muxer_mp4(const char* h264, int width, int height, const char
 
     do {
         //
-        double audio_tick_gap = (1000.0) / 60;
+        double audio_tick_gap = 1024000 / sr;
         double video_tick_gap = (1000.0) / FRAME_FRATE;
         //--------------------------------------------------------------------
         m_fp_h264 = fopen(h264, "rb");
@@ -168,16 +168,13 @@ static inline int _muxer_mp4(const char* h264, int width, int height, const char
                 //printf("now:%lld last_update:%lld audio_tick:%lld tick_exp:%lld\n", audio_tick_now, last_update, audio_tick, tick_exp);
                 audio_tick += audio_tick_gap;
                 int audio_len = _read_aac(m_fp_AAC, audioBuf, 1024);
-                if (audio_len == -2) {
-                    goto h264;
-                } else if (audio_len <= 0) {
+                if (audio_len <= 0) {
                     break;
                 }
-                if (m_videoId != MP4_INVALID_TRACK_ID && video_tick > 333)
-                    MP4WriteSample(m_hMp4File, m_audioId, audioBuf, audio_len, MP4_INVALID_DURATION, 0, 1);
+                MP4WriteSample(m_hMp4File, m_audioId, audioBuf, audio_len, MP4_INVALID_DURATION, 0, 1);
                 audio_tick_now = _get_tick_count();
             }
-h264:
+
             if (last_update - video_tick_now > video_tick_gap - tick_exp) {
                 // printf("now:%lld last_update:%lld video_tick:%lld tick_exp:%lld\n", video_tick_now, last_update, video_tick, tick_exp);
                 video_tick += video_tick_gap;

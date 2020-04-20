@@ -4,7 +4,6 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>sps_pps_parser.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -14,7 +13,6 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
-      <itemPath>sps_pps_parser.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -43,10 +41,6 @@
       </compileType>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="sps_pps_parser.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="sps_pps_parser.h" ex="false" tool="3" flavor2="0">
-      </item>
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
@@ -69,10 +63,6 @@
         </asmTool>
       </compileType>
       <item path="main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="sps_pps_parser.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="sps_pps_parser.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
