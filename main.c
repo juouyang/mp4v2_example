@@ -22,7 +22,7 @@
 #include <mp4v2/mp4v2.h>
 
 #define BUFFER_SIZE         (1920*1080)
-#define FRAME_FRATE         (15)
+#define FRAME_FRATE         (25)
 #define TIME_SCALE          (90000)
 
 typedef struct _MP4ENC_NaluUnit {
