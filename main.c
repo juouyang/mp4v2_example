@@ -28,7 +28,7 @@ static void* thread_libfbm_video_0(void* arg) {
                 , 1080
                 , "/media/sf_Downloads/foo/foo.aac"
                 , 48000
-                , "/media/sf_Downloads/foo/foo.mp4");
+                , "/media/sf_Downloads/foo/foo-mp4v2.mp4");
         printf("ret = %d\n", ret);
     } while (0);
     running--;
