@@ -57,11 +57,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mp4v2_c
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mp4v2_example
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mp4v2_c: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mp4v2_example: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mp4v2_c ${OBJECTFILES} ${LDLIBSOPTIONS} -lmp4v2 -lpthread
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mp4v2_example ${OBJECTFILES} ${LDLIBSOPTIONS} -lmp4v2 -lpthread
 
 ${OBJECTDIR}/libfbm_mp4.o: libfbm_mp4.c
 	${MKDIR} -p ${OBJECTDIR}

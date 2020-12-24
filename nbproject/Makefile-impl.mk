@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=mp4v2_c
+PROJECTNAME=mp4v2_example
 
 # Active Configuration
 DEFAULTCONF=Debug

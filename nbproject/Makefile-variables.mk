@@ -9,19 +9,19 @@ CND_DISTDIR=dist
 # Debug configuration
 CND_PLATFORM_Debug=GNU-Linux
 CND_ARTIFACT_DIR_Debug=dist/Debug/GNU-Linux
-CND_ARTIFACT_NAME_Debug=mp4v2_c
-CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Linux/mp4v2_c
+CND_ARTIFACT_NAME_Debug=mp4v2_example
+CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Linux/mp4v2_example
 CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Linux/package
-CND_PACKAGE_NAME_Debug=mp4v2c.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux/package/mp4v2c.tar
+CND_PACKAGE_NAME_Debug=mp4v2example.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux/package/mp4v2example.tar
 # Release configuration
 CND_PLATFORM_Release=GNU-Linux
 CND_ARTIFACT_DIR_Release=dist/Release/GNU-Linux
-CND_ARTIFACT_NAME_Release=mp4v2_c
-CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux/mp4v2_c
+CND_ARTIFACT_NAME_Release=mp4v2_example
+CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux/mp4v2_example
 CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux/package
-CND_PACKAGE_NAME_Release=mp4v2c.tar
-CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux/package/mp4v2c.tar
+CND_PACKAGE_NAME_Release=mp4v2example.tar
+CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux/package/mp4v2example.tar
 #
 # include compiler specific variables
 #
